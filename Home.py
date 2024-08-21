@@ -1,5 +1,12 @@
 import streamlit as st
 import yfinance as yf
+from sklearn.model_selection import train_test_split, GridSearchCV, TimeSeriesSplit
+from sklearn.preprocessing import RobustScaler, MinMaxScaler
+from sklearn.pipeline import Pipeline
+from sklearn.linear_model import Ridge
+from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error, silhouette_score
+from sklearn.feature_selection import SelectKBest, f_regression
+from sklearn.cluster import KMeans, DBSCAN
 
 # Set the page configuration
 st.set_page_config(
