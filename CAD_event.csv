@@ -1,24 +1,3 @@
-N_Event,N_Event_encoder
-ADP Employment,0
-Balance of,1
-BoC Interest,2
-Budget Balance,3
-Building Permits,4
-Core Inflation,5
-Employment Change,6
-Full Time,7
-GDP MoM,8
-Housing Starts,9
-Inflation Rate,10
-Ivey PMI,11
-Manufacturing Sales,12
-Markit Manufacturing,13
-New Housing,14
-New Motor,15
-PPI MoM,16
-PPI YoY,17
-Part Time,18
-Participation Rate,19
-Retail Sales,20
-Unemployment Rate,21
-Wholesale Sales,22
+version https://git-lfs.github.com/spec/v1
+oid sha256:2eebbeb01ec66da676601bf793015bb7929eb2813011f30673b6cefc0ee6d4df
+size 423

@@ -1,17 +1,3 @@
-N_Event,N_Event_encoder
-Balance of,0
-Building Permits,1
-Business Inflation,2
-Business NZ,3
-Employment Change,4
-Food Inflation,5
-Global Dairy,6
-Inflation Rate,7
-Labour Costs,8
-NZIER Business,9
-NZIER Capacity,10
-Participation Rate,11
-Retail Sales,12
-Services NZ,13
-Unemployment Rate,14
-Visitor Arrivals,15
+version https://git-lfs.github.com/spec/v1
+oid sha256:b29bd1a9d5872d546c601575a7d9dd129d10601a53baff9ba60fdc571f45a942
+size 321
