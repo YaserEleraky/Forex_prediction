@@ -1,5 +1,6 @@
 import streamlit as st
 import joblib
+from sklearn.externals import joblib
 import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots

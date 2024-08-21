@@ -1,4 +1,5 @@
 import streamlit as st
+from sklearn.externals import joblib
 import joblib
 import pandas as pd
 
@@ -93,7 +94,6 @@ def main():
         )
 
         st.title(f'Model Prediction For {currency}')
-        
         # Load the model for the selected currency
         model_filename = get_model_filename(currency)
         model = joblib.load(model_filename)
