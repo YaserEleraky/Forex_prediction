@@ -26,18 +26,25 @@ def get_dataframe_filename(symbol, timeframe):
 def load_currency_data(symbol, timeframe):
     """Load the CSV file for the selected symbol and timeframe."""
     filename = get_dataframe_filename(symbol, timeframe)
-    return pd.read_csv(filename)
+    try:
+        return pd.read_csv(filename)
+    except FileNotFoundError:
+        st.error(f"Data file {filename} not found. Please ensure the file is available.")
+        return pd.DataFrame()  # Return an empty DataFrame
 
 def plot_forex_data(df, symbol, timeframe):
     """Plot the Forex data with indicators for the selected symbol and timeframe."""
+    if df.empty:
+        return go.Figure()  # Return an empty figure if DataFrame is empty
+
     sample = df.tail(500).copy()
-    
+
     # Calculate Fibonacci retracement levels
     high_price = sample['high'].max()
     low_price = sample['low'].min()
     diff = high_price - low_price
     fibonacci_levels = {
-        'Fibonacci_0.236': high_price,
+        'Fibonacci_0.236': high_price - 0.236 * diff,
         'Fibonacci_0.382': high_price - 0.382 * diff,
         'Fibonacci_0.618': high_price - 0.618 * diff,
         'Fibonacci_0.786': high_price - 0.786 * diff,
@@ -293,6 +300,9 @@ def main():
 
         # Load and display the Forex data
         df = load_currency_data(symbol, timeframe)
+        if df.empty:
+            return  # Do not proceed if data is not available
+
         st.subheader(f"Forex Data for {symbol} ({timeframe})")
         st.dataframe(df.tail(10))
 
