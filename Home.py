@@ -1,24 +1,6 @@
 import streamlit as st
 import yfinance as yf
-import MetaTrader5 as mt
-from datetime import datetime
-import pandas as pd
-import numpy as np
-import time
-from sklearn.model_selection import train_test_split, GridSearchCV, TimeSeriesSplit
-from sklearn.preprocessing import RobustScaler, MinMaxScaler
-from sklearn.pipeline import Pipeline
-from sklearn.linear_model import Ridge
-from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error, silhouette_score
-from sklearn.feature_selection import SelectKBest, f_regression
-from sklearn.cluster import KMeans, DBSCAN
-import matplotlib.pyplot as plt
-import seaborn as sns
-import joblib
-import plotly.express as px
-import plotly.graph_objects as go
-from plotly.subplots import make_subplots
-import mplfinance as mpf
+
 # Set the page configuration
 st.set_page_config(
     page_title="Forex Market Analysis",
