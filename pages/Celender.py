@@ -10,7 +10,7 @@ st.set_page_config(
 )
 
 def get_model_filename(currency):
-    return f'{currency.lower()}.pkl'
+    return f'{currency}.pkl'
 
 def get_dataframe_filename(currency):
     return f'{currency.lower()}_event.csv'
