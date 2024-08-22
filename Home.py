@@ -1,7 +1,7 @@
 import streamlit as st
 import yfinance as yf
 import spacy
-from pages import Celender, Forex
+import Celender, Forex
 
 # Set the page configuration
 st.set_page_config(
