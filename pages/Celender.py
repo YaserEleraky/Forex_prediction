@@ -2,7 +2,7 @@ import streamlit as st
 import joblib
 import pandas as pd
 import spacy
-
+import os
 # Set page configuration
 st.set_page_config(
     page_title="Forex Market Analysis",
@@ -13,10 +13,7 @@ st.set_page_config(
 
 # Get the path for models directory
 def get_model_path(currency):
-    return os.path.join('models', f'{currency}.pkl')import os
-import streamlit as st
-import joblib
-import pandas as pd
+    return os.path.join('models', f'{currency}.pkl')
 
 # Get the path for impact data
 def get_impact_path():
