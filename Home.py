@@ -1,7 +1,6 @@
 import streamlit as st
 import yfinance as yf
-from sklearn.externals import joblib
-
+import spacy
 
 
 # Set the page configuration

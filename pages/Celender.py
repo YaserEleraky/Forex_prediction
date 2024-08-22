@@ -1,8 +1,7 @@
 import streamlit as st
-from sklearn.externals import joblib
 import joblib
 import pandas as pd
-
+import spacy
 # Set page configuration
 st.set_page_config(
     page_title="Forex Market Analysis",
