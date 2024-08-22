@@ -12,17 +12,16 @@ st.set_page_config(
     layout="wide"
 )
 
-# Define the list of symbols and timeframes
 symbols = ['USDX', 'EURX', 'XAUUSD', 'EURUSD', 'AUDUSD', 'GBPUSD', 'USDJPY', 'USDCHF', 'USDCAD']
 timeframes = ['M30', 'H1', 'H4', 'D1']
 
 def get_model_filename(symbol, timeframe):
     """Generate the model filename based on the symbol and timeframe."""
-    return f'{symbol.lower()}_{timeframe.lower()}.pkl'
+    return f'models/{symbol.lower()}_{timeframe.lower()}.pkl'
 
 def get_dataframe_filename(symbol, timeframe):
     """Generate the dataframe filename based on the symbol and timeframe."""
-    return f'forex_{symbol.lower()}_{timeframe.lower()}.csv'
+    return f'data/forex_{symbol.lower()}_{timeframe.lower()}.csv'
 
 def load_currency_data(symbol, timeframe):
     """Load the CSV file for the selected symbol and timeframe."""
@@ -299,15 +298,19 @@ def main():
 
     
     elif page == "Prediction":
-        
         st.sidebar.title("Prediction")
         symbol = st.sidebar.radio('Select Symbol', symbols)
         timeframe = st.sidebar.radio('Select Timeframe', timeframes)
         st.title(f"Prediction For {symbol} On {timeframe}📈")
+
         # Load the model
         model_filename = get_model_filename(symbol, timeframe)
-        model = joblib.load(model_filename)
-
+        try:
+            model = joblib.load(model_filename)
+        except FileNotFoundError:
+            st.error(f"Model file '{model_filename}' not found. Please make sure the model file exists in the 'models' directory.")
+            return
+        
         # Display the plot of the latest data
         df = load_currency_data(symbol, timeframe)
         fig = plot_forex_data(df, symbol, timeframe)
@@ -350,9 +353,12 @@ def main():
 
         # Button to make predictions
         if st.button('Predict'):
-            # Make predictions with the selected model
-            prediction = model.predict(data)
-            st.write(f'Prediction: {prediction[0]}')
+            try:
+                # Make predictions with the selected model
+                prediction = model.predict(data)
+                st.write(f'Prediction: {prediction[0]}')
+            except Exception as e:
+                st.error(f"An error occurred while making predictions: {e}")
 
 if __name__ == '__main__':
     main()
