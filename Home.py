@@ -148,15 +148,22 @@ currency_pairs = {
 
 # Display market data in two columns
 cols = st.columns(2)
+
 for i, (pair, ticker) in enumerate(currency_pairs.items()):
-    currency_data = yf.Ticker(ticker)
-    hist = currency_data.history(period="1d")
-    if not hist.empty:
-        price = hist['Close'].iloc[-1]
-        change = hist['Close'].iloc[-1] - hist['Open'].iloc[-1]
-        cols[i % 2].metric(label=pair, value=f"${price:.4f}", delta=f"{change:.4f}")
-    else:
-        cols[i % 2].metric(label=pair, value="No Data", delta="N/A")
+    try:
+        currency_data = yf.Ticker(ticker)
+        hist = currency_data.history(period="1d")
+        
+        if not hist.empty and 'Close' in hist.columns and 'Open' in hist.columns:
+            price = hist['Close'].iloc[-1]
+            change = hist['Close'].iloc[-1] - hist['Open'].iloc[-1]
+            cols[i % 2].metric(label=pair, value=f"${price:.4f}", delta=f"{change:.4f}")
+        else:
+            cols[i % 2].metric(label=pair, value="No Data", delta="N/A")
+    
+    except Exception as e:
+        st.error(f"An error occurred while fetching data for {pair}: {e}")
+        cols[i % 2].metric(label=pair, value="Error", delta="N/A")
 
 # Example placeholder for a technical analysis tool
 st.write("**[Interactive Technical Analysis Chart Here]**")
