@@ -140,13 +140,16 @@ for pair, ticker in currency_pairs.items():
     currency_data = yf.Ticker(ticker)
     hist = currency_data.history(period="1d")
     
-    # Check if the DataFrame is empty
     if hist.empty:
         print(f"No data returned for {ticker}")
     else:
-        price = hist['Close'].iloc[-1]
-        change = hist['Close'].iloc[-1] - hist['Open'].iloc[-1]
-        print(f"Price: {price}, Change: {change}")
+        try:
+            price = hist['Close'].iloc[-1]
+            change = hist['Close'].iloc[-1] - hist['Open'].iloc[-1]
+            print(f"Price: {price}, Change: {change}")
+        except IndexError as e:
+            print(f"Error processing data for {ticker}: {e}")
+            print("Data received:", hist)
 
 # Example placeholder for a technical analysis tool
 st.write("**[Interactive Technical Analysis Chart Here]**")
