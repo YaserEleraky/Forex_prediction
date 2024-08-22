@@ -1,5 +1,4 @@
 import streamlit as st
-import yfinance as yf
 import warnings
 import joblib 
 import pandas 
@@ -95,13 +94,32 @@ st.write("""
     Below, you'll find an economic calendar from Myfxbook, providing real-time updates on global economic events.
 """)
 
-# Embedding the updated Myfxbook Economic Calendar widget
-st.components.v1.iframe(
-    src="https://widget.myfxbook.com/widget/calendar.html?lang=en&impacts=1,2,3&symbols=AUD,CAD,CHF,EUR,GBP,JPY,USD",
-    width=2000,  # Adjust the width as needed
-    height=400,  # Adjust the height as needed
-    scrolling=True
-)
+
+
+st.components.v1.html("""
+<!-- TradingView Widget BEGIN -->
+<div class="tradingview-widget-container">
+  <div class="tradingview-widget-container__widget"></div>
+  <div class="tradingview-widget-copyright">
+    <a href="https://www.tradingview.com/" rel="noopener nofollow" target="_blank">
+      <span class="blue-text">Track all markets on TradingView</span>
+    </a>
+  </div>
+  <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-events.js" async>
+  {
+    "colorTheme": "dark",
+    "isTransparent": false,
+    "width": "2020",
+    "height": "800",
+    "locale": "en",
+    "importanceFilter": "-1,0,1",
+    "countryFilter": "us,ca,eu,au,de,jp,ch,gb"
+  }
+  </script>
+</div>
+<!-- TradingView Widget END -->
+""", height=600 , width=2020)
+
 st.markdown("---")
 
 # Forex Market Section for Major Currency Pairs
@@ -119,7 +137,34 @@ st.components.v1.iframe(
     scrolling=True
 )
 st.markdown("---")
-
+st.subheader('Real-Time Forex Heat Map')
+st.components.v1.html("""
+<!-- TradingView Widget BEGIN -->
+<div class="tradingview-widget-container">
+  <div class="tradingview-widget-container__widget"></div>
+  <div class="tradingview-widget-copyright"><a href="https://www.tradingview.com/" rel="noopener nofollow" target="_blank"><span class="blue-text">Track all markets on TradingView</span></a></div>
+  <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-forex-heat-map.js" async>
+  {
+  "width": "2000",
+  "height": 500,
+  "currencies": [
+    "EUR",
+    "USD",
+    "JPY",
+    "GBP",
+    "CHF",
+    "AUD",
+    "CAD"
+  ],
+  "isTransparent": false,
+  "colorTheme": "dark",
+  "locale": "en",
+  "backgroundColor": "#1D222D"
+}
+  </script>
+</div>
+<!-- TradingView Widget END -->""" , height=500,width=2000)
+st.markdown("---")
 # Technical Analysis Section
 st.markdown("<h2 style='text-align: center; color: #4CAF50;'>Harness the Power of Technical Analysis</h2>", unsafe_allow_html=True)
 st.write("""
@@ -134,22 +179,68 @@ st.write("""
     This section helps you stay informed and make strategic trading decisions based on real-time information.
 """)
 
-currency_pairs = {'USD/EUR': 'EURUSD=X'}
 
-for pair, ticker in currency_pairs.items():
-    currency_data = yf.Ticker(ticker)
-    hist = currency_data.history(period="1d")
-    
-    if hist.empty:
-        print(f"No data returned for {ticker}")
-    else:
-        try:
-            price = hist['Close'].iloc[-1]
-            change = hist['Close'].iloc[-1] - hist['Open'].iloc[-1]
-            print(f"Price: {price}, Change: {change}")
-        except IndexError as e:
-            print(f"Error processing data for {ticker}: {e}")
-            print("Data received:", hist)
+# Embed the TradingView Ticker Tape widget
+st.components.v1.html("""
+<!-- TradingView Widget BEGIN -->
+<div class="tradingview-widget-container">
+  <div class="tradingview-widget-container__widget"></div>
+  <div class="tradingview-widget-copyright">
+    <a href="https://www.tradingview.com/" rel="noopener nofollow" target="_blank">
+      <span class="blue-text">Track all markets on TradingView</span>
+    </a>
+  </div>
+  <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
+  {
+    "symbols": [
+      {
+        "description": "EUR/USD",
+        "proName": "FX:EURUSD"
+      },
+      {
+        "description": "Dollar Index USDX",
+        "proName": "PEPPERSTONE:USDX"
+      },
+      {
+        "description": "Euro Index EURX",
+        "proName": "PEPPERSTONE:EURX"
+      },
+      {
+        "description": "GOLD",
+        "proName": "OANDA:XAUUSD"
+      },
+      {
+        "description": "USD/CAD",
+        "proName": "FX:USDCAD"
+      },
+      {
+        "description": "USD/CHF",
+        "proName": "FX:USDCHF"
+      },
+      {
+        "description": "USD/JPY",
+        "proName": "FX:USDJPY"
+      },
+      {
+        "description": "GBP/USD",
+        "proName": "FX:GBPUSD"
+      },
+      {
+        "description": "AUD/USD",
+        "proName": "OANDA:AUDUSD"
+      }
+    ],
+    "showSymbolLogo": true,
+    "isTransparent": false,
+    "displayMode": "compact",
+    "colorTheme": "dark",
+    "locale": "en"
+  }
+  </script>
+</div>
+<!-- TradingView Widget END -->
+""", height=100)
+
 
 # Example placeholder for a technical analysis tool
 st.write("**[Interactive Technical Analysis Chart Here]**")
