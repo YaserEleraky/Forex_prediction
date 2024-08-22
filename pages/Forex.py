@@ -21,11 +21,11 @@ timeframes = ['M30', 'H1', 'H4', 'D1']
 
 def get_model_filename(symbol, timeframe):
     """Generate the model filename based on the symbol and timeframe."""
-    return f'{symbol.lower()}_{timeframe.lower()}.pkl'
+    return f'{symbol}_{timeframe}.pkl'
 
 def get_dataframe_filename(symbol, timeframe):
     """Generate the dataframe filename based on the symbol and timeframe."""
-    return f'forex_{symbol.lower()}_{timeframe.lower()}.csv'
+    return f'forex_{symbol}_{timeframe}.csv'
 
 def load_currency_data(symbol, timeframe):
     """Load the CSV file for the selected symbol and timeframe."""
