@@ -173,14 +173,5 @@ def main():
         Whether you're focusing on short-term trades or long-term investments, the insights and tools available here will support your trading decisions and enhance your market strategy.
     """)
 
-        # Sidebar for page selection
-    page = st.sidebar.radio("Select a page:", ["Celender", "Forex"])
-
-        # Load the selected page
-    if page == "Celender":
-            Celender.main()
-    elif page == "Forex":
-            Forex.main()
-
 if __name__ == "__main__":
     main()

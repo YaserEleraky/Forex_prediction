@@ -11,17 +11,16 @@ st.set_page_config(
 )
 
 
-# Function to get model filename
-def get_model_filename(currency):
-    return f'models/{currency}.pkl'
+# Get the path for models directory
+def get_model_path(currency):
+    return os.path.join('models', f'{currency}.pkl')
 
-# Function to get data file for currency events
-def get_dataframe_filename(currency):
-    return f'data/{currency.lower()}_event.csv'
+# Get the path for data files
+def get_data_path(currency):
+    return os.path.join('data', f'{currency.lower()}_event.csv')
 
-# Function to get impact data file
-def get_impact_filename():
-    return 'data/impact.csv'
+def get_impact_path():
+    return os.path.join('data', 'impact.csv')
 
 def main():
     # Create a sidebar with navigation options
@@ -83,78 +82,59 @@ def main():
         st.markdown("---")
 
     elif page == "Prediction":
-        # Load impact data
-        impact_filename = get_impact_filename()
-        try:
-            impact = pd.read_csv(impact_filename)
+        impact_path = get_impact_path()
+        if os.path.exists(impact_path):
+            impact = pd.read_csv(impact_path)
             st.sidebar.dataframe(impact)
-        except FileNotFoundError:
-            st.error(f"Impact file '{impact_filename}' not found.")
-            return
-        except Exception as e:
-            st.error(f"Error loading impact data: {e}")
+        else:
+            st.error(f"Impact file '{impact_path}' not found.")
             return
 
-        # Sidebar for currency selection
-        currency = st.sidebar.radio(
+    currency = st.sidebar.radio(
             "Select Currency",
             ['EUR', 'USD', 'GBP', 'CHF', 'NZD', 'CAD', 'AUD', 'JPY']
         )
 
-        if currency:
-            st.title(f'Model Prediction For {currency}')
+    if currency:
+        st.title(f'Model Prediction For {currency}')
             
-            # Load the model for the selected currency
-            model_filename = get_model_filename(currency)
-            try:
-                model = joblib.load(model_filename)
-            except FileNotFoundError:
-                st.error(f"Model file '{model_filename}' not found.")
-                return
-            except Exception as e:
-                st.error(f"Error loading model: {e}")
-                return
-            
-            # Load the DataFrame for the selected currency
-            dataframe_filename = get_dataframe_filename(currency)
-            try:
-                df = pd.read_csv(dataframe_filename)
-                st.dataframe(df)
-            except FileNotFoundError:
-                st.error(f"Data file '{dataframe_filename}' not found.")
-                return
-            except Exception as e:
-                st.error(f"Error loading data: {e}")
-                return
+        model_path = get_model_path(currency)
+        if os.path.exists(model_path):
+            model = joblib.load(model_path)
+        else:
+            st.error(f"Model file '{model_path}' not found.")
+            return
 
-            # Input fields for each feature
-            previous = st.number_input('Previous', format="%.2f")
-            consensus = st.number_input('Consensus', format="%.2f")
-            consensus_lag = st.number_input('Consensus_Lag', format="%.2f")
-            actual_lag = st.number_input('Actual_Lag', format="%.2f")
-            previous_lag = st.number_input('Previous_Lag', format="%.2f")
-            impact_encoder = st.number_input('Impact_encoder', format="%.2f")
-            n_event_encoder = st.number_input('N_Event_encoder', format="%.2f")
+        dataframe_path = get_data_path(currency)
+        if os.path.exists(dataframe_path):
+            df = pd.read_csv(dataframe_path)
+            st.dataframe(df)
+        else:
+            st.error(f"Data file '{dataframe_path}' not found.")
+            retur   
+        previous = st.number_input('Previous', format="%.2f")
+        consensus = st.number_input('Consensus', format="%.2f")
+        consensus_lag = st.number_input('Consensus_Lag', format="%.2f")
+        actual_lag = st.number_input('Actual_Lag', format="%.2f")
+        previous_lag = st.number_input('Previous_Lag', format="%.2f")
+        impact_encoder = st.number_input('Impact_encoder', format="%.2f")
+        n_event_encoder = st.number_input('N_Event_encoder', format="%.2f")  
+        data = pd.DataFrame({
+            'Previous': [previous],
+            'Consensus': [consensus],
+            'Consensus_Lag': [consensus_lag],
+            'Actual_Lag': [actual_lag],
+            'Previous_Lag': [previous_lag],
+            'Impact_encoder': [impact_encoder],
+            'N_Event_encoder': [n_event_encoder]
+        })
 
-            # Create a DataFrame with the input features
-            data = pd.DataFrame({
-                'Previous': [previous],
-                'Consensus': [consensus],
-                'Consensus_Lag': [consensus_lag],
-                'Actual_Lag': [actual_lag],
-                'Previous_Lag': [previous_lag],
-                'Impact_encoder': [impact_encoder],
-                'N_Event_encoder': [n_event_encoder]
-            })
-
-            # Button to make predictions
-            if st.button('Predict'):
-                try:
-                    # Make predictions with the selected model
-                    prediction = model.predict(data)
-                    st.write(f'Prediction: {prediction[0]}')
-                except Exception as e:
-                    st.error(f"Error making prediction: {e}")
+    if st.button('Predict'):
+        try:
+            prediction = model.predict(data)
+            st.write(f'Prediction: {prediction[0]}')
+        except Exception as e:
+            st.error(f"Error making prediction: {e}")
 
 if __name__ == "__main__":
     main()
