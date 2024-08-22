@@ -151,15 +151,22 @@ cols = st.columns(2)
 
 for i, (pair, ticker) in enumerate(currency_pairs.items()):
     try:
+        st.write(f"Fetching data for {pair} with ticker {ticker}...")
         currency_data = yf.Ticker(ticker)
         hist = currency_data.history(period="1d")
         
-        if not hist.empty and 'Close' in hist.columns and 'Open' in hist.columns:
-            price = hist['Close'].iloc[-1]
-            change = hist['Close'].iloc[-1] - hist['Open'].iloc[-1]
-            cols[i % 2].metric(label=pair, value=f"${price:.4f}", delta=f"{change:.4f}")
-        else:
+        if hist.empty:
+            st.write(f"No data returned for {pair}.")
             cols[i % 2].metric(label=pair, value="No Data", delta="N/A")
+        else:
+            st.write(f"Data retrieved for {pair}:\n{hist}")
+            if 'Close' in hist.columns and 'Open' in hist.columns:
+                price = hist['Close'].iloc[-1]
+                change = hist['Close'].iloc[-1] - hist['Open'].iloc[-1]
+                cols[i % 2].metric(label=pair, value=f"${price:.4f}", delta=f"{change:.4f}")
+            else:
+                st.write(f"Columns 'Close' or 'Open' missing in data for {pair}.")
+                cols[i % 2].metric(label=pair, value="No Data", delta="N/A")
     
     except Exception as e:
         st.error(f"An error occurred while fetching data for {pair}: {e}")
