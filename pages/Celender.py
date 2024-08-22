@@ -83,56 +83,74 @@ def main():
 
     elif page == "Prediction":
 
-        impact = pd.read_csv("impact.csv")
         st.sidebar.subheader("Impact Data")
+        impact = pd.read_csv("impact.csv")
         st.sidebar.dataframe(impact)
+
         # Sidebar for currency selection
         currency = st.sidebar.radio(
             "Select Currency",
             ['EUR', 'USD', 'GBP', 'CHF', 'NZD', 'CAD', 'AUD', 'JPY']
         )
 
-        st.title(f'Model Prediction For {currency}')
-        # Load the model for the selected currency
-        model_filename = get_model_filename(currency)
-        model = joblib.load(model_filename)
-        
-        # Load the DataFrame for the selected currency
-        df = load_currency_data(currency)
+        if currency:
+            st.title(f'Model Prediction For {currency}')
+            
+            # Load the model for the selected currency
+            model_filename = get_model_filename(currency)
+            try:
+                model = joblib.load(model_filename)
+            except FileNotFoundError:
+                st.error(f"Model file '{model_filename}' not found.")
+                return
+            except Exception as e:
+                st.error(f"Error loading model: {e}")
+                return
+            
+            # Load the DataFrame for the selected currency
+            try:
+                df = load_currency_data(currency)
+            except FileNotFoundError:
+                st.error(f"Data file '{get_dataframe_filename(currency)}' not found.")
+                return
+            except Exception as e:
+                st.error(f"Error loading data: {e}")
+                return
 
-        # Display the selected currency and model filename
-        st.sidebar.write(f"Selected Currency: {currency}")
-        st.sidebar.write(f"Model File: {model_filename}")
-        st.write("Encoder Data")
-        st.dataframe(df)
+            # Display the selected currency and model filename
+            st.sidebar.write(f"Selected Currency: {currency}")
+            st.sidebar.write(f"Model File: {model_filename}")
+            st.write("Encoder Data")
+            st.dataframe(df)
 
-        # Input fields for each feature
-        previous = st.number_input('Previous', format="%.2f")
-        consensus = st.number_input('Consensus', format="%.2f")
-        consensus_lag = st.number_input('Consensus_Lag', format="%.2f")
-        actual_lag = st.number_input('Actual_Lag', format="%.2f")
-        previous_lag = st.number_input('Previous_Lag', format="%.2f")
-        impact_encoder = st.number_input('Impact_encoder', format="%.2f")
-        n_event_encoder = st.number_input('N_Event_encoder', format="%.2f")
+            # Input fields for each feature
+            previous = st.number_input('Previous', format="%.2f")
+            consensus = st.number_input('Consensus', format="%.2f")
+            consensus_lag = st.number_input('Consensus_Lag', format="%.2f")
+            actual_lag = st.number_input('Actual_Lag', format="%.2f")
+            previous_lag = st.number_input('Previous_Lag', format="%.2f")
+            impact_encoder = st.number_input('Impact_encoder', format="%.2f")
+            n_event_encoder = st.number_input('N_Event_encoder', format="%.2f")
 
-        # Create a DataFrame with the input features
-        data = pd.DataFrame({
-            'Previous': [previous],
-            'Consensus': [consensus],
-            'Consensus_Lag': [consensus_lag],
-            'Actual_Lag': [actual_lag],
-            'Previous_Lag': [previous_lag],
-            'Impact_encoder': [impact_encoder],
-            'N_Event_encoder': [n_event_encoder]
-        })
+            # Create a DataFrame with the input features
+            data = pd.DataFrame({
+                'Previous': [previous],
+                'Consensus': [consensus],
+                'Consensus_Lag': [consensus_lag],
+                'Actual_Lag': [actual_lag],
+                'Previous_Lag': [previous_lag],
+                'Impact_encoder': [impact_encoder],
+                'N_Event_encoder': [n_event_encoder]
+            })
 
-        # Button to make predictions
-        if st.button('Predict'):
-            # Make predictions with the selected model
-            prediction = model.predict(data)
-            st.write(f'Prediction: {prediction[0]}')
+            # Button to make predictions
+            if st.button('Predict'):
+                try:
+                    # Make predictions with the selected model
+                    prediction = model.predict(data)
+                    st.write(f'Prediction: {prediction[0]}')
+                except Exception as e:
+                    st.error(f"Error making prediction: {e}")
 
-
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
