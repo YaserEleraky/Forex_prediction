@@ -1,6 +1,7 @@
 import streamlit as st
 import joblib
 import pandas as pd
+import os
 import warnings
 from sklearn.exceptions import InconsistentVersionWarning
 
@@ -21,11 +22,15 @@ def get_dataframe_filename(currency):
 
 def load_currency_data(currency):
     filename = get_dataframe_filename(currency)
+    if not os.path.isfile(filename):
+        st.error(f"Data file {filename} not found.")
+        return pd.DataFrame()  # Return an empty DataFrame if file is not found
     return pd.read_csv(filename)
 
 def main():
     # Create a sidebar with navigation options
-    page = st.sidebar.radio("Navigation", ["About","Prediction"])
+    page = st.sidebar.radio("Navigation", ["About", "Prediction"])
+
     if page == "About":
         # Title and image centered
         st.title("📈 Fundamental Analysis Economic Events 🌟")
@@ -50,9 +55,9 @@ def main():
                 # 📈 Starting Your Forex Market Project: Key Points to Consider 🌟
                    #####  The Forex market is the largest financial market globally, trading over $6 trillion daily.<br>
                    #####  This project aims to enhance forex trading strategies by leveraging economic calendar data.<br>
-                   #####  By analyzing key economic events, such as GDP releases, employment reports, and central bank meetings,traders can better predict market movements.<br>
+                   #####  By analyzing key economic events, such as GDP releases, employment reports, and central bank meetings, traders can better predict market movements.<br>
                    #####  The focus is on understanding how these events impact currency pairs, with a particular emphasis on comparing forecasted versus actual data.<br>
-                   #####  The goal is to provide traders with actionable insights,helping them make informed and strategic decisions in the forex market.
+                   #####  The goal is to provide traders with actionable insights, helping them make informed and strategic decisions in the forex market.
             """,
             unsafe_allow_html=True
         )
@@ -84,12 +89,11 @@ def main():
         # Add another horizontal line
         st.markdown("---")
 
-
     elif page == "Prediction":
-
         impact = pd.read_csv("impact.csv")
         st.sidebar.subheader("Impact Data")
         st.sidebar.dataframe(impact)
+        
         # Sidebar for currency selection
         currency = st.sidebar.radio(
             "Select Currency",
@@ -97,12 +101,20 @@ def main():
         )
 
         st.title(f'Model Prediction For {currency}')
+        
         # Load the model for the selected currency
         model_filename = get_model_filename(currency)
+        if not os.path.isfile(model_filename):
+            st.error(f"Model file {model_filename} not found.")
+            return
+        
         model = joblib.load(model_filename)
         
         # Load the DataFrame for the selected currency
         df = load_currency_data(currency)
+        if df.empty:
+            st.error(f"Data file for {currency} is missing or empty.")
+            return
 
         # Display the selected currency and model filename
         st.sidebar.write(f"Selected Currency: {currency}")
@@ -135,8 +147,6 @@ def main():
             # Make predictions with the selected model
             prediction = model.predict(data)
             st.write(f'Prediction: {prediction[0]}')
-
-
 
 if __name__ == '__main__':
     main()
