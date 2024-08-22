@@ -9,7 +9,6 @@ import sklearn
 from sklearn.exceptions import InconsistentVersionWarning
 warnings.filterwarnings(action='ignore', category=InconsistentVersionWarning)
 
-
 # Set the page configuration
 st.set_page_config(
     page_title="Forex Market Analysis",
