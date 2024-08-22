@@ -1,7 +1,10 @@
 import streamlit as st
 import joblib
 import pandas as pd
-import spacy
+import warnings
+from sklearn.exceptions import InconsistentVersionWarning
+
+warnings.filterwarnings(action='ignore', category=InconsistentVersionWarning)
 
 # Set page configuration
 st.set_page_config(
@@ -10,23 +13,21 @@ st.set_page_config(
     layout="wide"
 )
 
+def get_model_filename(currency):
+    return f'{currency.lower()}.pkl'
 
-# Get the path for models directory
-def get_model_path(currency):
-    return os.path.join('models', f'{currency}.pkl')
+def get_dataframe_filename(currency):
+    return f'{currency.lower()}_event.csv'
 
-# Get the path for data files
-def get_data_path(currency):
-    return os.path.join('data', f'{currency.lower()}_event.csv')
-
-def get_impact_path():
-    return os.path.join('data', 'impact.csv')
+def load_currency_data(currency):
+    filename = get_dataframe_filename(currency)
+    return pd.read_csv(filename)
 
 def main():
     # Create a sidebar with navigation options
-    page = st.sidebar.radio("Navigation", ["About", "Prediction"])
-
+    page = st.sidebar.radio("Navigation", ["About","Prediction"])
     if page == "About":
+        # Title and image centered
         st.title("📈 Fundamental Analysis Economic Events 🌟")
         st.markdown("---")
 
@@ -40,21 +41,23 @@ def main():
             unsafe_allow_html=True
         )
 
+        # Add a horizontal line
         st.markdown("---")
 
         # Project description
         st.markdown(
             """
                 # 📈 Starting Your Forex Market Project: Key Points to Consider 🌟
-                   ##### The Forex market is the largest financial market globally, trading over $6 trillion daily.<br>
-                   ##### This project aims to enhance forex trading strategies by leveraging economic calendar data.<br>
-                   ##### By analyzing key economic events, such as GDP releases, employment reports, and central bank meetings, traders can better predict market movements.<br>
-                   ##### The focus is on understanding how these events impact currency pairs, with a particular emphasis on comparing forecasted versus actual data.<br>
-                   ##### The goal is to provide traders with actionable insights, helping them make informed and strategic decisions in the forex market.
+                   #####  The Forex market is the largest financial market globally, trading over $6 trillion daily.<br>
+                   #####  This project aims to enhance forex trading strategies by leveraging economic calendar data.<br>
+                   #####  By analyzing key economic events, such as GDP releases, employment reports, and central bank meetings,traders can better predict market movements.<br>
+                   #####  The focus is on understanding how these events impact currency pairs, with a particular emphasis on comparing forecasted versus actual data.<br>
+                   #####  The goal is to provide traders with actionable insights,helping them make informed and strategic decisions in the forex market.
             """,
             unsafe_allow_html=True
         )
 
+        # Add a horizontal line
         st.markdown("---")
 
         # Key Components list
@@ -66,7 +69,6 @@ def main():
             """,
             unsafe_allow_html=True
         )
-
         st.markdown("""
     # Columns
 
@@ -79,46 +81,45 @@ def main():
     #### **Datetime 🕒**: Specifies the exact date and time when the event is scheduled to occur.
 """)
 
+        # Add another horizontal line
         st.markdown("---")
 
-    elif page == "Prediction":
-        impact_path = get_impact_path()
-        if os.path.exists(impact_path):
-            impact = pd.read_csv(impact_path)
-            st.sidebar.dataframe(impact)
-        else:
-            st.error(f"Impact file '{impact_path}' not found.")
-            return
 
-    currency = st.sidebar.radio(
+    elif page == "Prediction":
+
+        impact = pd.read_csv("impact.csv")
+        st.sidebar.subheader("Impact Data")
+        st.sidebar.dataframe(impact)
+        # Sidebar for currency selection
+        currency = st.sidebar.radio(
             "Select Currency",
             ['EUR', 'USD', 'GBP', 'CHF', 'NZD', 'CAD', 'AUD', 'JPY']
         )
 
-    if currency:
         st.title(f'Model Prediction For {currency}')
-            
-        model_path = get_model_path(currency)
-        if os.path.exists(model_path):
-            model = joblib.load(model_path)
-        else:
-            st.error(f"Model file '{model_path}' not found.")
-            return
+        # Load the model for the selected currency
+        model_filename = get_model_filename(currency)
+        model = joblib.load(model_filename)
+        
+        # Load the DataFrame for the selected currency
+        df = load_currency_data(currency)
 
-        dataframe_path = get_data_path(currency)
-        if os.path.exists(dataframe_path):
-            df = pd.read_csv(dataframe_path)
-            st.dataframe(df)
-        else:
-            st.error(f"Data file '{dataframe_path}' not found.")
-            retur   
+        # Display the selected currency and model filename
+        st.sidebar.write(f"Selected Currency: {currency}")
+        st.sidebar.write(f"Model File: {model_filename}")
+        st.write("Encoder Data")
+        st.dataframe(df)
+
+        # Input fields for each feature
         previous = st.number_input('Previous', format="%.2f")
         consensus = st.number_input('Consensus', format="%.2f")
         consensus_lag = st.number_input('Consensus_Lag', format="%.2f")
         actual_lag = st.number_input('Actual_Lag', format="%.2f")
         previous_lag = st.number_input('Previous_Lag', format="%.2f")
         impact_encoder = st.number_input('Impact_encoder', format="%.2f")
-        n_event_encoder = st.number_input('N_Event_encoder', format="%.2f")  
+        n_event_encoder = st.number_input('N_Event_encoder', format="%.2f")
+
+        # Create a DataFrame with the input features
         data = pd.DataFrame({
             'Previous': [previous],
             'Consensus': [consensus],
@@ -129,13 +130,13 @@ def main():
             'N_Event_encoder': [n_event_encoder]
         })
 
-    if st.button('Predict'):
-                try:
-                    prediction = model.predict(data)
-                    st.write(f'Prediction: {prediction[0]}')
-                except Exception as e:
-                    st.error(f"Error making prediction: {e}")
+        # Button to make predictions
+        if st.button('Predict'):
+            # Make predictions with the selected model
+            prediction = model.predict(data)
+            st.write(f'Prediction: {prediction[0]}')
 
-if __name__ == "__main__":
+
+
+if __name__ == '__main__':
     main()
-

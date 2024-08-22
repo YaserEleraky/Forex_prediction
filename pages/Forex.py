@@ -3,8 +3,11 @@ import joblib
 import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-import spacy
 # Set the page configuration
+import warnings
+from sklearn.exceptions import InconsistentVersionWarning
+
+warnings.filterwarnings(action='ignore', category=InconsistentVersionWarning)
 
 st.set_page_config(
     page_title="Forex Market Analysis",
@@ -12,16 +15,17 @@ st.set_page_config(
     layout="wide"
 )
 
+# Define the list of symbols and timeframes
 symbols = ['USDX', 'EURX', 'XAUUSD', 'EURUSD', 'AUDUSD', 'GBPUSD', 'USDJPY', 'USDCHF', 'USDCAD']
 timeframes = ['M30', 'H1', 'H4', 'D1']
 
 def get_model_filename(symbol, timeframe):
     """Generate the model filename based on the symbol and timeframe."""
-    return f'models/{symbol.lower()}_{timeframe.lower()}.pkl'
+    return f'{symbol.lower()}_{timeframe.lower()}.pkl'
 
 def get_dataframe_filename(symbol, timeframe):
     """Generate the dataframe filename based on the symbol and timeframe."""
-    return f'data/forex_{symbol.lower()}_{timeframe.lower()}.csv'
+    return f'forex_{symbol.lower()}_{timeframe.lower()}.csv'
 
 def load_currency_data(symbol, timeframe):
     """Load the CSV file for the selected symbol and timeframe."""
@@ -298,19 +302,15 @@ def main():
 
     
     elif page == "Prediction":
+        
         st.sidebar.title("Prediction")
         symbol = st.sidebar.radio('Select Symbol', symbols)
         timeframe = st.sidebar.radio('Select Timeframe', timeframes)
         st.title(f"Prediction For {symbol} On {timeframe}📈")
-
         # Load the model
         model_filename = get_model_filename(symbol, timeframe)
-        try:
-            model = joblib.load(model_filename)
-        except FileNotFoundError:
-            st.error(f"Model file '{model_filename}' not found. Please make sure the model file exists in the 'models' directory.")
-            return
-        
+        model = joblib.load(model_filename)
+
         # Display the plot of the latest data
         df = load_currency_data(symbol, timeframe)
         fig = plot_forex_data(df, symbol, timeframe)
@@ -353,12 +353,9 @@ def main():
 
         # Button to make predictions
         if st.button('Predict'):
-            try:
-                # Make predictions with the selected model
-                prediction = model.predict(data)
-                st.write(f'Prediction: {prediction[0]}')
-            except Exception as e:
-                st.error(f"An error occurred while making predictions: {e}")
+            # Make predictions with the selected model
+            prediction = model.predict(data)
+            st.write(f'Prediction: {prediction[0]}')
 
 if __name__ == '__main__':
     main()
