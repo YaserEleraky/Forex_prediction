@@ -318,20 +318,23 @@ def main():
 
         # Prediction Inputs
         st.subheader('Enter Feature Values')
-        open = st.number_input('Open', format="%.2f")
-        EMA_5 = st.number_input('EMA_5', format="%.2f")
-        EMA_8 = st.number_input('EMA_8', format="%.2f")
-        EMA_13 = st.number_input('EMA_13', format="%.2f")
-        lag1_close = st.number_input('Lag1_Close', format="%.2f")
-        lag2_close = st.number_input('Lag2_Close', format="%.2f")
-        previous_open = st.number_input('Previous_Open', format="%.2f")
-        previous_high = st.number_input('Previous_High', format="%.2f")
-        previous_low = st.number_input('Previous_Low', format="%.2f")
-        previous_open2 = st.number_input('Previous_Open2', format="%.2f")
-        previous_high2 = st.number_input('Previous_High2', format="%.2f")
-        previous_low2 = st.number_input('Previous_Low2', format="%.2f")
-        previous_pip_value = st.number_input('Previous_Pip_Value', format="%.2f")
-        open_macd_diff = st.number_input('Open_MACD_Diff', format="%.2f")
+
+        # Collecting input values with more precision and user-friendly prompts
+        open = st.number_input('Enter the opening price (Open)', format="%.13f")
+        EMA_5 = st.number_input('Enter the 5-period Exponential Moving Average (EMA_5)', format="%.13f")
+        EMA_8 = st.number_input('Enter the 8-period Exponential Moving Average (EMA_8)', format="%.13f")
+        EMA_13 = st.number_input('Enter the 13-period Exponential Moving Average (EMA_13)', format="%.13f")
+        lag1_close = st.number_input('Enter the closing price from 1 period ago (Lag1_Close)', format="%.13f")
+        lag2_close = st.number_input('Enter the closing price from 2 periods ago (Lag2_Close)', format="%.13f")
+        previous_open = st.number_input('Enter the previous period\'s opening price (Previous_Open)', format="%.13f")
+        previous_high = st.number_input('Enter the previous period\'s highest price (Previous_High)', format="%.13f")
+        previous_low = st.number_input('Enter the previous period\'s lowest price (Previous_Low)', format="%.13f")
+        previous_open2 = st.number_input('Enter the opening price from 2 periods ago (Previous_Open2)', format="%.13f")
+        previous_high2 = st.number_input('Enter the highest price from 2 periods ago (Previous_High2)', format="%.13f")
+        previous_low2 = st.number_input('Enter the lowest price from 2 periods ago (Previous_Low2)', format="%.13f")
+        previous_pip_value = st.number_input('Enter the previous period\'s pip value (Previous_Pip_Value)', format="%.13f")
+        open_macd_diff = st.number_input('Enter the difference between MACD and Signal Line at open (Open_MACD_Diff)', format="%.13f")
+
 
         # Create a DataFrame with the input features
         data = pd.DataFrame({

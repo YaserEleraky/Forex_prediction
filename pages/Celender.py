@@ -123,13 +123,15 @@ def main():
         st.dataframe(df)
 
         # Input fields for each feature
-        previous = st.number_input('Previous', format="%.2f")
-        consensus = st.number_input('Consensus', format="%.2f")
-        consensus_lag = st.number_input('Consensus_Lag', format="%.2f")
-        actual_lag = st.number_input('Actual_Lag', format="%.2f")
-        previous_lag = st.number_input('Previous_Lag', format="%.2f")
-        impact_encoder = st.number_input('Impact_encoder', format="%.2f")
-        n_event_encoder = st.number_input('N_Event_encoder', format="%.2f")
+        # Additional Prediction Inputs with high precision and descriptive labels
+        previous = st.number_input('Enter the previous value (Previous)', format="%.13f")
+        consensus = st.number_input('Enter the consensus value (Consensus)', format="%.13f")
+        consensus_lag = st.number_input('Enter the consensus value from the previous period (Consensus_Lag)', format="%.13f")
+        actual_lag = st.number_input('Enter the actual value from the previous period (Actual_Lag)', format="%.13f")
+        previous_lag = st.number_input('Enter the previous period\'s value (Previous_Lag)', format="%.13f")
+        impact_encoder = st.number_input('Enter the impact encoder value (Impact_Encoder)', format="%.13f")
+        n_event_encoder = st.number_input('Enter the event count encoder value (N_Event_Encoder)', format="%.13f")
+
 
         # Create a DataFrame with the input features
         data = pd.DataFrame({
