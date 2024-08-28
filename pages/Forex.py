@@ -1,4 +1,5 @@
 import streamlit as st
+import numpy as np
 import joblib
 import pandas as pd
 import plotly.graph_objects as go
@@ -6,6 +7,7 @@ from plotly.subplots import make_subplots
 # Set the page configuration
 import warnings
 from sklearn.exceptions import InconsistentVersionWarning
+from PIL import Image
 
 warnings.filterwarnings(action='ignore', category=InconsistentVersionWarning)
 
@@ -18,7 +20,51 @@ st.set_page_config(
 # Define the list of symbols and timeframes
 symbols = ['USDX', 'EURX', 'XAUUSD', 'EURUSD', 'AUDUSD', 'GBPUSD', 'USDJPY', 'USDCHF', 'USDCAD']
 timeframes = ['M30', 'H1', 'H4', 'D1']
+pip_sizes = {
+            'USDX': 0.0001,
+            'EURX': 0.0001,
+            'XAUUSD': 0.0001,
+            'EURUSD': 0.0001,
+            'AUDUSD': 0.0001,
+            'GBPUSD': 0.0001,
+            'USDJPY': 0.01,    # Specific pip size for USDJPY
+            'USDCHF': 0.0001,
+            'USDCAD': 0.0001
+        }
+        # Function to calculate pip value based on a single input value
+def calculate_pip_value(exchange_rate, pip_size, trade_size):
+    """Calculate the pip value based on a single exchange rate."""
+    if exchange_rate == 0:
+        st.error("Error: Exchange rate cannot be zero.")
+        return None
+    return (pip_size / exchange_rate) * trade_size
+def make_prediction(model, features, input_values):
+    """Make predictions using the provided model."""
+    # Convert input values to a DataFrame
+    data = pd.DataFrame([input_values], columns=features)
+    
+    # Preprocess the features (ensure they are numeric)
+    data_preprocessed = preprocess_features(data, features)
+    
+    # Make the prediction
+    prediction = model.predict(data_preprocessed)
+    
+    return prediction
 
+def preprocess_features(data, features):
+    """Preprocess features to ensure they are all numeric."""
+    for col in features:
+        if np.issubdtype(data[col].dtype, np.datetime64):
+            data[col] = data[col].astype(np.int64)  # Convert datetime to int (Unix timestamp)
+    
+    numeric_features = [col for col in features if np.issubdtype(data[col].dtype, np.number)]
+    
+    # Ensure all required features are present
+    missing_features = set(features) - set(numeric_features)
+    if missing_features:
+        raise ValueError(f"Missing features for preprocessing: {missing_features}")
+    
+    return data[numeric_features]
 def get_model_filename(symbol, timeframe):
     """Generate the model filename based on the symbol and timeframe."""
     return f'{symbol}_{timeframe}.pkl'
@@ -276,42 +322,100 @@ def main():
         
         # List of columns for prediction with increased font size
         st.markdown(
-            """
-            ##### **open:** Opening price of the forex pair for the time period.
-            ##### **EMA_5:** 5-period exponential moving average.
-            ##### **EMA_8:** 8-period exponential moving average.
-            ##### **EMA_13:** 13-period exponential moving average.
-            ##### **log_return:** Logarithmic return of the forex pair.
-            ##### **lag1_close:** Closing price lagged by one period.
-            ##### **lag2_close:** Closing price lagged by two periods.
-            ##### **open_macd_diff:** Difference between open price and MACD line for period .
-            ### Open-MACD Difference (`open_macd_diff`)
-            ```python
-            ['open_macd_diff'] = ['open'] -['MACD_Line']
-            ```
-            ### **Explanation**: Calculates the difference between the opening price and the MACD line. This feature helps to analyze how the opening price compares to the MACD indicator, which is used to identify trading signals.
-            ##### **previous_open:** Opening price of the previous period.
-            ##### **previous_open2:** Opening price lagged by two periods.
-            ##### **previous_high:** Highest price of the previous period.
-            ##### **previous_high2:** Highest price lagged by two periods.
-            ##### **previous_low:** Lowest price of the previous period.
-            ##### **previous_low2:** Lowest price lagged by two periods.
-            ##### **previous_pip_value:** Pip value of the previous period.
-            """, unsafe_allow_html=True
-        )
+    """
+    ## Feature Descriptions
+    
+    ### Input Fields for Feature Values
+    
+    **Open**: Opening price of the forex pair for the time period. This is the price at which the forex pair started trading in the selected period.
+    
+    **Previous_Open**: Opening price of the previous period. This helps in comparing the current opening price with that of the previous period.
+    
+    **Previous_High**: Highest price of the previous period. This indicates the peak price reached in the previous period.
+    
+    **Previous_Low**: Lowest price of the previous period. This shows the lowest price reached in the previous period.
+    
+    **Lag1_Close**: Closing price from 1 period ago. This provides the closing price from the immediately preceding period.
+    
+    **Previous_Open2**: Opening price from 2 periods ago. This helps in analyzing the trend over a slightly longer time frame.
+    
+    **Previous_High2**: Highest price from 2 periods ago. This is useful for comparing historical high prices.
+    
+    **Previous_Low2**: Lowest price from 2 periods ago. This is useful for comparing historical low prices.
+    
+    **Lag2_Close**: Closing price from 2 periods ago. This gives a view of how the closing price has evolved over the past two periods.
+
+    ### Input Fields for Indicators
+    
+    **EMA_5**: 5-period exponential moving average. This smooths out price data over the past 5 periods to identify the trend direction.
+    
+    **EMA_8**: 8-period exponential moving average. This smooths out price data over the past 8 periods for a slightly longer trend analysis.
+    
+    **EMA_13**: 13-period exponential moving average. This helps in understanding the trend over a more extended period.
+    
+    **MACD_Signal**: MACD Signal Line value. This is used to identify the trend and potential buy/sell signals.
+    
+    **MACD_Line**: MACD Line value. This helps in determining the relationship between short-term and long-term price trends.
+    
+    **Prev_EMA_5**: 5-period EMA from the previous period. Useful for comparing the current EMA with the previous period's value.
+    
+    **Prev_EMA_8**: 8-period EMA from the previous period. Useful for trend comparison with the previous period.
+    
+    **Prev_EMA_13**: 13-period EMA from the previous period. Provides context for longer-term trend analysis.
+    
+    **Prev_MACD_Signal**: MACD Signal Line value from the previous period. Helps in evaluating changes in trend signals.
+    
+    **Prev_MACD_Line**: MACD Line value from the previous period. Useful for assessing the trend's momentum.
+
+    """, unsafe_allow_html=True
+)
 
     
     elif page == "Prediction":
-        
+        def preprocess_features(data, features):
+            """Preprocess features to ensure they are all numeric and consistent."""
+            for col in features:
+                if np.issubdtype(data[col].dtype, np.datetime64):
+                    data[col] = data[col].astype(np.int64)  # Convert datetime to int (Unix timestamp)
+
+            numeric_features = [col for col in features if np.issubdtype(data[col].dtype, np.number)]
+            return data[numeric_features]
+
+        def make_prediction(model, features, input_values):
+            """Make predictions using the provided model."""
+            # Convert input values to a DataFrame
+            data = pd.DataFrame([input_values], columns=features)
+
+            # Preprocess the features (ensure they are numeric)
+            data_preprocessed = preprocess_features(data, features)
+
+            # Ensure the data is passed without feature names if necessary
+            data_preprocessed = data_preprocessed.values  # Convert to NumPy array
+
+            # Make the prediction
+            prediction = model.predict(data_preprocessed)
+
+            return prediction
+
+         # Sidebar for symbol and timeframe selection
         st.sidebar.title("Prediction")
+
+        # Select Symbol and Timeframe
         symbol = st.sidebar.radio('Select Symbol', symbols)
         timeframe = st.sidebar.radio('Select Timeframe', timeframes)
+
+        # Display the title with selected symbol and timeframe
         st.title(f"Prediction For {symbol} On {timeframe}📈")
+
+        # Automatically update and display the pip size for the selected symbol
+        pip_size = pip_sizes[symbol]
+        st.write(f"Selected symbol: **{symbol}** | Pip size: **{pip_size}**")
+
         # Load the model
         model_filename = get_model_filename(symbol, timeframe)
         model = joblib.load(model_filename)
 
-        # Display the plot of the latest data
+        # Load and plot the latest data for the selected symbol
         df = load_currency_data(symbol, timeframe)
         fig = plot_forex_data(df, symbol, timeframe)
         st.plotly_chart(fig)
@@ -319,46 +423,112 @@ def main():
         # Prediction Inputs
         st.subheader('Enter Feature Values')
 
-        # Collecting input values with more precision and user-friendly prompts
-        open = st.number_input('Enter the opening price (Open)', format="%.13f")
-        EMA_5 = st.number_input('Enter the 5-period Exponential Moving Average (EMA_5)', format="%.13f")
-        EMA_8 = st.number_input('Enter the 8-period Exponential Moving Average (EMA_8)', format="%.13f")
-        EMA_13 = st.number_input('Enter the 13-period Exponential Moving Average (EMA_13)', format="%.13f")
-        lag1_close = st.number_input('Enter the closing price from 1 period ago (Lag1_Close)', format="%.13f")
-        lag2_close = st.number_input('Enter the closing price from 2 periods ago (Lag2_Close)', format="%.13f")
-        previous_open = st.number_input('Enter the previous period\'s opening price (Previous_Open)', format="%.13f")
-        previous_high = st.number_input('Enter the previous period\'s highest price (Previous_High)', format="%.13f")
-        previous_low = st.number_input('Enter the previous period\'s lowest price (Previous_Low)', format="%.13f")
-        previous_open2 = st.number_input('Enter the opening price from 2 periods ago (Previous_Open2)', format="%.13f")
-        previous_high2 = st.number_input('Enter the highest price from 2 periods ago (Previous_High2)', format="%.13f")
-        previous_low2 = st.number_input('Enter the lowest price from 2 periods ago (Previous_Low2)', format="%.13f")
-        previous_pip_value = st.number_input('Enter the previous period\'s pip value (Previous_Pip_Value)', format="%.13f")
-        open_macd_diff = st.number_input('Enter the difference between MACD and Signal Line at open (Open_MACD_Diff)', format="%.13f")
+        # Creating two columns for input fields
+        col1, col2 = st.columns(2)
 
+        # Input fields in the first column
+        with col1:
+            open_price = st.number_input('Enter the opening price (Open)', format="%.5f")
+            EMA_5 = st.number_input('Enter the 5-period Exponential Moving Average (EMA_5)', format="%.5f")
+            EMA_8 = st.number_input('Enter the 8-period Exponential Moving Average (EMA_8)', format="%.5f")
+            EMA_13 = st.number_input('Enter the 13-period Exponential Moving Average (EMA_13)', format="%.5f")
+            MACD_Signal = st.number_input('Enter the MACD Signal Line value (MACD_Signal)', format="%.8f")
+            MACD_Line = st.number_input('Enter the MACD Line value (MACD_Line)', format="%.8f")
+            previous_open2 = st.number_input('Enter the opening price from 2 periods ago (Previous_Open2)', format="%.5f")
+            previous_high2 = st.number_input('Enter the highest price from 2 periods ago (Previous_High2)', format="%.5f")
+            previous_low2 = st.number_input('Enter the lowest price from 2 periods ago (Previous_Low2)', format="%.5f")
+            lag2_close = st.number_input('Enter the closing price from 2 periods ago (Lag2_Close)', format="%.5f")
 
-        # Create a DataFrame with the input features
-        data = pd.DataFrame({
-            'open': [open],
-            'EMA_5': [EMA_5],
-            'EMA_8': [EMA_8],
-            'EMA_13': [EMA_13],
-            'lag1_close': [lag1_close],
-            'lag2_close': [lag2_close],
-            'previous_open': [previous_open],
-            'previous_high': [previous_high],
-            'previous_low': [previous_low],
-            'previous_open2': [previous_open2],
-            'previous_high2': [previous_high2],
-            'previous_low2': [previous_low2],
-            'previous_pip_value': [previous_pip_value],
-            'open_macd_diff': [open_macd_diff]
-        })
+        # Input fields in the second column
+        with col2:
+            previous_open = st.number_input('Enter the previous period\'s opening price (Previous_Open)', format="%.5f")
+            previous_high = st.number_input('Enter the previous period\'s highest price (Previous_High)', format="%.5f")
+            previous_low = st.number_input('Enter the previous period\'s lowest price (Previous_Low)', format="%.5f")
+            lag1_close = st.number_input('Enter the closing price from 1 period ago (Lag1_Close)', format="%.5f")
+            prev_EMA_5 = st.number_input('Enter the 5-period Exponential Moving Average from the previous period (Prev_EMA_5)', format="%.5f")
+            prev_EMA_8 = st.number_input('Enter the 8-period Exponential Moving Average from the previous period (Prev_EMA_8)', format="%.5f")
+            prev_EMA_13 = st.number_input('Enter the 13-period Exponential Moving Average from the previous period (Prev_EMA_13)', format="%.5f")
+            prev_MACD_Signal = st.number_input('Enter the MACD Signal Line value from the previous period (Prev_MACD_Signal)', format="%.8f")
+            prev_MACD_Line = st.number_input('Enter the MACD Line value from the previous period (Prev_MACD_Line)', format="%.8f")
+            previous_pip_value = st.number_input('Enter the Pip Value from the previous period (Previous_Pip_Value)', format="%.8f")
+        # Calculate the MACD differences
+        open_macd_diff = open_price - MACD_Line
+        prev_open_macd_diff = previous_open - prev_MACD_Line
+        
+        # Calculate `previous_pip_value` dynamically
+        trade_size = 100000  # 1 standard lot
+        previous_pip_value = calculate_pip_value(lag1_close, pip_size, trade_size)
 
-        # Button to make predictions
+        # Only proceed if the pip value was successfully calculated (not None)
+        if previous_pip_value is not None:
+            # Display the calculated `previous_pip_value`
+            st.markdown(f"## Calculated Previous Pip Value: {previous_pip_value:.10f}")
+            st.markdown(f"## Open MACD Difference: {open_macd_diff:.8f}")
+            st.markdown(f"## Previous Open MACD Difference: {prev_open_macd_diff:.8f}")
+            # Button to make predictions
         if st.button('Predict'):
-            # Make predictions with the selected model
-            prediction = model.predict(data)
-            st.write(f'Prediction: {prediction[0]}')
+            # Define the features for preprocessing
+            feature_names = [
+                'open_price', 'EMA_5', 'EMA_8', 'EMA_13', 'MACD_Signal', 'lag1_close', 'lag2_close',
+                'previous_open', 'previous_high', 'previous_low', 'previous_open2', 'previous_high2',
+                'previous_low2', 'previous_pip_value', 'open_macd_diff', 'prev_EMA_5', 'prev_EMA_8',
+                'prev_EMA_13', 'prev_open_macd_diff', 'prev_MACD_Signal'
+            ]
+            
+            # Collect input values
+            input_values = {
+                'open_price': open_price, 'EMA_5': EMA_5, 'EMA_8': EMA_8, 'EMA_13': EMA_13,
+                'MACD_Signal': MACD_Signal, 'lag1_close': lag1_close,
+                'lag2_close': lag2_close, 'previous_open': previous_open, 'previous_high': previous_high,
+                'previous_low': previous_low, 'previous_open2': previous_open2, 'previous_high2': previous_high2,
+                'previous_low2': previous_low2, 'previous_pip_value': previous_pip_value, 'open_macd_diff': open_macd_diff,
+                'prev_EMA_5': prev_EMA_5, 'prev_EMA_8': prev_EMA_8, 'prev_EMA_13': prev_EMA_13,
+                'prev_open_macd_diff': prev_open_macd_diff, 'prev_MACD_Signal': prev_MACD_Signal,
+            }
+
+            # Ensure that the number of input values matches the expected number of features
+            if len(input_values) != len(feature_names):
+                st.error(f"Mismatch between input values and feature names: {len(input_values)} vs {len(feature_names)}")
+                return
+            # Convert the dictionary to a DataFrame
+            df = pd.DataFrame(list(input_values.items()), columns=['Feature', 'Value'])
+
+            # Split the DataFrame into two parts horizontally
+            half = len(df) // 2
+            df_part1 = df.iloc[:half].reset_index(drop=True)
+            df_part2 = df.iloc[half:].reset_index(drop=True)
+
+            # Create a new DataFrame by combining the two parts horizontally
+            df_combined = pd.concat([df_part1, df_part2], axis=1)
+
+            # Rename the columns to distinguish between the two halves
+            df_combined.columns = ['Feature 1', 'Value 1', 'Feature 2', 'Value 2']
+
+            # Display the combined DataFrame
+            st.dataframe(df_combined)
+
+            # Make prediction using the make_prediction function
+            try:
+                prediction = make_prediction(model, feature_names, input_values)
+                adjustment = 0.0265
+                adjusted_prediction = prediction[0] + adjustment
+
+                # Display the prediction value
+                st.markdown(f""" # Original Prediction :  {prediction[0]:.10f}\n""")
+
+                buy_icon = Image.open("buy-button.png")
+                sell_icon = Image.open("selling.png")
+
+                if adjusted_prediction > open_price:
+                    st.image(buy_icon, width=215)
+                    st.markdown(""" # Signal: **BUY** """)
+                elif adjusted_prediction < open_price:
+                    st.markdown(""" # Signal: **SELL** """)
+                    st.image(sell_icon, width=215)
+                else:
+                    st.write("Signal: **HOLD**")
+            except Exception as e:
+                st.error(f"Error during prediction: {e}")
 
 if __name__ == '__main__':
     main()

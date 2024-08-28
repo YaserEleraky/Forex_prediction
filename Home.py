@@ -16,8 +16,8 @@ st.set_page_config(
 )
 
 # Home Page Title
-st.markdown("<h1 style='text-align: center;'>Empowering Your Forex Trading Journey</h1>", unsafe_allow_html=True)
-st.markdown("<h2 style='text-align: center;'>Stay ahead in the market with real-time insights and analysis.</h2>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center;'>💹Empowering Your Forex Trading Journey</h1>", unsafe_allow_html=True)
+st.markdown("<h2 style='text-align: center;'>📈Stay ahead in the market with real-time insights and analysis.</h2>", unsafe_allow_html=True)
 
 # Introduction to Forex Trading
 st.markdown("<h2 style='text-align: center; color: #4CAF50;'>Welcome to the Forex Market Analysis Platform</h2>", unsafe_allow_html=True)
